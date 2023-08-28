@@ -1,10 +1,36 @@
-export default (req, res) => {
-  const { password } = req.body;
-  if (password === "secretPassword") {
-    // This is just an example. Never hard-code passwords.
-    res.setHeader("Set-Cookie", "loggedIn=true; path=/; HttpOnly");
-    res.status(200).json({ success: true });
-  } else {
-    res.status(401).json({ success: false });
-  }
-};
+import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/router";
+import { useAuth } from "../context/auth";
+
+export default function LoginPage() {
+  const [password, setPassword] = useState("");
+  const router = useRouter();
+  const { setIsLoggedIn } = useAuth();
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post("/api/login", { password });
+      if (response.data.success) {
+        setIsLoggedIn(true);
+        router.push("/protected");
+      } else {
+        alert("Incorrect password");
+      }
+    } catch (error) {
+      alert("Login failed");
+    }
+  };
+
+  return (
+    <div>
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Enter password"
+      />
+      <button onClick={handleLogin}>Login</button>
+    </div>
+  );
+}
